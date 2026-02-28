@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PromptPage AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-10">
+
+<h1 class="text-3xl mb-5">PromptPage AI</h1>
+
+<div id="auth">
+<input id="email" placeholder="Email" class="border p-2 mb-2 w-full"><br>
+<input id="password" type="password" placeholder="Password" class="border p-2 mb-2 w-full"><br>
+<button onclick="login()" class="bg-blue-600 text-white px-4 py-2">Login</button>
+</div>
+
+<div id="dashboard" class="hidden mt-5">
+<h2>Credits: <span id="credits"></span></h2>
+<textarea id="prompt" class="border p-3 w-full h-32"></textarea>
+<button onclick="generate()" class="bg-green-600 text-white px-4 py-2 mt-3">Generate</button>
+<button onclick="copyCode()" class="bg-blue-500 text-white px-4 py-2 mt-3">Copy</button>
+<button onclick="downloadZip()" class="bg-purple-600 text-white px-4 py-2 mt-3">Download ZIP</button>
+<pre id="output" class="bg-black text-green-400 p-4 mt-4"></pre>
+</div>
+
+<script>
+let token = "";
+
+async function login(){
+const res = await fetch("YOUR_RENDER_URL/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email:email.value,password:password.value})
+});
+const data = await res.json();
+token=data.token;
+credits.innerText=data.credits;
+auth.classList.add("hidden");
+dashboard.classList.remove("hidden");
+}
+
+async function generate(){
+const res = await fetch("YOUR_RENDER_URL/generate",{
+method:"POST",
+headers:{"Content-Type":"application/json","Authorization":token},
+body:JSON.stringify({prompt:prompt.value})
+});
+const data = await res.json();
+output.textContent=data.result;
+credits.innerText=data.credits;
+}
+
+function copyCode(){
+navigator.clipboard.writeText(output.textContent);
+alert("Copied!");
+}
+
+async function downloadZip(){
+const res=await fetch("https://ai-landingweb.onrender.com/download",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({code:output.textContent})
+});
+const blob=await res.blob();
+const url=window.URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="landing-page.zip";
+a.click();
+}
+</script>
+
+</body>
+</html>
